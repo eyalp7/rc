@@ -84,7 +84,7 @@ def handle_screenshots(screenshots_socket):
 
         cv2.imshow("Server's view: ", img)
 
-        if cv2.waitKey(1) == ord('q'):
+        if cv2.waitKey(1) == ord('q') and keyboard.is_pressed('ctrl'):
             break
 
 def connect_to_screenshots_server():
