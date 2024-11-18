@@ -66,7 +66,6 @@ def handle_screenshots(client_socket):
     w, h = pyautogui.size()
 
     with mss.mss() as sct:
-        print("ok")
         monitor = {"top": 0, "left": 0, "width": w, "height": h}
         #An infinite loop that continually captures screenshots and sends them to the client.
         while True:
@@ -93,7 +92,7 @@ def handle_mouse_movements(mouse_socket):
     """Handles the mouse movements of the client. """
     while True:
         message, _ = mouse_socket.recvfrom(1024)
-        #mouse_movement(json.loads(message.decode('utf-8')))
+        mouse_movement(json.loads(message.decode('utf-8')))
 
 
 def start_clicks_server():
