@@ -11,37 +11,36 @@ import keyboard
 
 #Server configuration settings
 IP = "127.0.0.1"
-EVENTS_PORT = 12345
+CLICKS_PORT = 12345
 SCREENSHOTS_PORT = 54321
+MOUSE_PORT = 12346
 
-print(f"Connecting to the events socket in {IP}:{EVENTS_PORT}... ")
-events_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #The socket has to be a global variable so it can be used in the different functions.
-events_socket.connect((IP, EVENTS_PORT))
+
+print(f"Connecting to the events socket in {IP}:{CLICKS_PORT}... ")
+clicks_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #The socket has to be a global variable so it can be used in the different functions.
+clicks_socket.connect((IP, CLICKS_PORT))
 
 def new_key(event):
     """ Sends keyboard presses to the server."""
     button = event.name
     message = json.dumps({"action": "keyboard_press", "key": button}).encode()
-    events_socket.send(message)
+    clicks_socket.send(message)
 
 def on_move(x, y):
     """ Sends mouse movement information to the server."""
     message =json.dumps({"action": "mouse_movement", "x": x, "y": y}).encode() #Serialization
-    events_socket.send(message)
-    time.sleep(0.05)
+    clicks_socket.send(message)
 
 def on_click(x, y, button, pressed):
     """ Sends a mouse click to the server."""
     if pressed:
         message = json.dumps({"action": "mouse_click", "x": x, "y": y, "button": str(button)}).encode() #Serialization
-        events_socket.send(message)
-        time.sleep(0.05)
+        clicks_socket.send(message)
 
 def on_scroll(x, y, dx, dy):
     """ Sends a mouse scroll to the server."""
     message = json.dumps({"action": "mouse_scroll", "x": x, "y": y, "dx": dx, "dy": dy}).encode() #Serialization
-    events_socket.send(message)
-    time.sleep(0.05)
+    clicks_socket.send(message)
 
 def handle_keyboard():
     """Listens for keyboard presses. """
@@ -54,12 +53,14 @@ def handle_mouse():
         listener.join() #Starts tracking mouse events.
 
 def handle_mouse_movements():
-    """Sends 4 times every second information about the mouse movement"""
+    """Sends the current mouse location to the server. """
+    mouse_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    address = (IP, MOUSE_PORT)
     while True:
         x, y = pyautogui.position()
         message =json.dumps({"action": "mouse_movement", "x": x, "y": y}).encode() #Serialization
-        events_socket.send(message)
-        time.sleep(0.25)
+        mouse_socket.sendto(message, address)
+        time.sleep(0.05)
 
 def handle_screenshots(screenshots_socket):
     """Receives screenshots from the server and displays them. """
@@ -84,7 +85,7 @@ def handle_screenshots(screenshots_socket):
 
         cv2.imshow("Server's view: ", img)
 
-        if cv2.waitKey(1) == ord('q') and keyboard.is_pressed('ctrl'):
+        if cv2.waitKey(1) == 2490368: #The keycode for 'f8'.
             break
 
 def connect_to_screenshots_server():
