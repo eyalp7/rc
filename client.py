@@ -20,6 +20,18 @@ print(f"Connecting to the events socket in {IP}:{CLICKS_PORT}... ")
 clicks_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #The socket has to be a global variable so it can be used in the different functions.
 clicks_socket.connect((IP, CLICKS_PORT))
 
+def authorization(client_socket):
+    """Logs to the server with the password. """
+    message = client_socket.recv(1024).decode('utf-8')
+    print(message)
+
+    while(message != "SUCCESS"):
+        #A loop that runs until the server sends success(that means that the password was right).
+        password = input()
+        client_socket.send(password.encode('utf-8'))
+        message = client_socket.recv(1024).decode('utf-8')
+        print(message)
+
 def new_key(event):
     """ Sends keyboard presses to the server."""
     button = event.name
@@ -100,7 +112,8 @@ def connect_to_screenshots_server():
 
 def main():
     """The main function that calls all of the needes function. """
-    threading.Thread(target=connect_to_screenshots_server).start()
+    authorization(clicks_socket)
+    screenshos_thread = threading.Thread(target=connect_to_screenshots_server).start()
     mouse_thread = threading.Thread(target=handle_mouse).start()
     keyboard_thread = threading.Thread(target=handle_keyboard).start()
     movement_thread = threading.Thread(target=handle_mouse_movements).start()

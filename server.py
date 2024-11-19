@@ -14,9 +14,21 @@ IP = "127.0.0.1"
 KEYBOARD_PORT = 12345
 SCREENSHOTS_PORT = 54321
 MOUSE_PORT = 12346
+PASSWORD = "password123"
 
 special_keys = ['ctrl', 'right ctrl', 'alt', 'right alt', 'shift', 'right shift'] #Special keys that are usually pressed with another key.
 last_key = "_" #The last key that the client pressed.
+
+def authentication(client_socket):
+    """Gets the password from the client. """
+    client_socket.send("Enter the password: ".encode('utf-8'))
+    while True:
+        given_password = client_socket.recv(1024).decode('utf-8')
+        if(given_password == PASSWORD):
+            client_socket.send("SUCCESS".encode('utf-8'))
+            break
+        client_socket.send("Invalid password. ".encode('utf-8'))
+
 
 def mouse_click(event):
     print(event)
@@ -95,17 +107,22 @@ def handle_mouse_movements(mouse_socket):
         mouse_movement(json.loads(message.decode('utf-8')))
 
 
-def start_clicks_server():
-    """Starts the server that handles keyboard and mouse events. """
+def start_main_server():
+    """Starts the server that handles keyboard and mouse events + authentication. """
     print(f"Starting events server on: {IP}:{KEYBOARD_PORT}...")
-    clicks_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    clicks_socket.bind((IP, KEYBOARD_PORT))
+    main_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    main_socket.bind((IP, KEYBOARD_PORT))
 
-    clicks_socket.listen(1)
-    client_socket, address = clicks_socket.accept()
+    main_socket.listen(1)
+    client_socket, address = main_socket.accept()
     print(f"Connection established from: {address}")
 
-    handle_presses(client_socket)
+    authentication(client_socket)
+
+    clicks_thread = threading.Thread(target= handle_presses, args=(client_socket,)).start()
+    screenshots_thread = threading.Thread(target=start_screenshots_server).start()
+    movements_thread = threading.Thread(target=start_mouse_server).start()
+
 
 def start_screenshots_server():
     """Starts the socket that handles the screenshots taking and sending. """
@@ -118,7 +135,7 @@ def start_screenshots_server():
     print(f"Connection established from: {address}")
 
     handle_screenshots(client_socket)
-
+    
 def start_mouse_server():
     """Starts the udp socket that listens for mouse movements."""
     mouse_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -128,9 +145,7 @@ def start_mouse_server():
     handle_mouse_movements(mouse_socket)
 
 def main():
-    events_thread = threading.Thread(target=start_clicks_server).start()
-    screenshots_thread = threading.Thread(target=start_screenshots_server).start()
-    movements_thread = threading.Thread(target=start_mouse_server).start()
+    start_main_server()
 
 
 if __name__ == '__main__':
