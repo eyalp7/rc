@@ -127,4 +127,5 @@ if cv2.waitKey(1) & 0xFF == ord('q') and keyboard.is_pressed('ctrl'):
 ### Notes:
 - Ensure both the server and client scripts run on machines with Python 3.8+.
 - Press `ctrl + q` in the client's screen stream window to quit the stream.
-- This project is still in progress. I plan to improve the performance.
+- This project is still in progress. I plan to improve the performane, and adding authorization.
+- **Do not run this both of the python scripts on the same machine, it won't work as planned.**
