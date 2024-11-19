@@ -10,7 +10,7 @@ import struct
 import threading
 
 #Server configuration settings.
-IP = "10.0.0.7" #okay nice this is working very nicely
+IP = "10.0.0.7"
 EVENTS_PORT = 12345
 SCREENSHOTS_PORT = 54321
 special_keys = ['ctrl', 'right ctrl', 'alt', 'right alt', 'shift', 'right shift'] #Special keys that are usually pressed with another key.
